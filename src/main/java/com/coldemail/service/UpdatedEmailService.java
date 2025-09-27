@@ -53,8 +53,8 @@ public class UpdatedEmailService {
 
         try {
             // Validate session
-            if (sessionId == null || authService.getUserSession(sessionId) == null) {
-                throw new SecurityException("Invalid or expired session");
+            if (sessionId == null) {
+                throw new SecurityException("Invalid session ID"");
             }
 
             // Get authenticated user's email
