@@ -102,15 +102,15 @@ spring:
 # Production CORS
 app:
   frontend:
-    url: ${FRONTEND_URL:https://yourdomain.com}
+    url: ${FRONTEND_URL:https://cold-email-app.netlify.app}
   cors:
     additional-origins:
-      - https://www.yourdomain.com
+      - https://cold-email-app.netlify.app
 
 # Production OAuth
 google:
   oauth:
-    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://yourdomain.com/api/auth/callback}
+    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://cold-email-app.netlify.app/api/auth/callback}
 
 # Production Logging
 logging:
