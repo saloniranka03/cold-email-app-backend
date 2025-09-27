@@ -110,7 +110,7 @@ app:
 # Production OAuth
 google:
   oauth:
-    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://cold-email-app.netlify.app/api/auth/callback}
+    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://cold-email-app-backend.onrender.com/api/auth/callback}
 
 # Production Logging
 logging:
