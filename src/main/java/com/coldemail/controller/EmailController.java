@@ -292,13 +292,15 @@ public class EmailController {
         }
         
         // Additional debug info
-        response.put("requestInfo", Map.of(
-            "method", request.getMethod(),
-            "requestURI", request.getRequestURI(),
-            "origin", request.getHeader("Origin"),
-            "host", request.getHeader("Host"),
-            "userAgent", request.getHeader("User-Agent")
-        ));
+        Map<String, String> requestInfo = new HashMap<>();
+        requestInfo.put("method", request.getMethod());
+        requestInfo.put("requestURI", request.getRequestURI());
+        requestInfo.put("origin", request.getHeader("Origin"));        // ← HashMap allows null
+        requestInfo.put("host", request.getHeader("Host"));            // ← HashMap allows null
+        requestInfo.put("userAgent", request.getHeader("User-Agent")); // ← HashMap allows null
+        response.put("requestInfo", requestInfo);
+        
+        logger.info("requestInfo: {}", requestInfo);
         
         logger.info("=== END SESSION DEBUG ===");
         return ResponseEntity.ok(response);
