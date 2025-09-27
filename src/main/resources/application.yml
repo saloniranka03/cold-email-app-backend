@@ -1,0 +1,168 @@
+# Default configuration
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cold-email-app
+
+  # Multipart file upload settings
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # JSON Configuration
+  jackson:
+    default-property-inclusion: NON_NULL
+
+# Google OAuth Configuration
+google:
+  oauth:
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+    client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/auth/callback}
+
+# Custom Application Properties
+app:
+  # CORS Configuration
+  frontend:
+    url: http://localhost:3000
+  cors:
+    additional-origins: []
+
+# Logging Configuration
+logging:
+  level:
+    com.coldemail: INFO
+    root: WARN
+
+# Management Configuration (Health checks)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+---
+# Local Profile (for development)
+spring:
+  config:
+    activate:
+      on-profile: local
+
+# Local OAuth Configuration (replace with your actual values)
+google:
+  oauth:
+    client-id: your-client-id.apps.googleusercontent.com
+    client-secret: your-client-secret
+    redirect-uri: http://localhost:8080/api/auth/callback
+
+# Local CORS
+app:
+  frontend:
+    url: http://localhost:3000
+
+# Local Logging
+logging:
+  level:
+    com.coldemail: DEBUG
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# Development CORS
+app:
+  frontend:
+    url: http://localhost:3000
+  cors:
+    additional-origins:
+      - http://localhost:3001
+      - http://localhost:8080
+
+# Development Logging
+logging:
+  level:
+    com.coldemail: DEBUG
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# Production CORS
+app:
+  frontend:
+    url: ${FRONTEND_URL:https://yourdomain.com}
+  cors:
+    additional-origins:
+      - https://www.yourdomain.com
+
+# Production OAuth
+google:
+  oauth:
+    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://yourdomain.com/api/auth/callback}
+
+# Production Logging
+logging:
+  level:
+    root: WARN
+    com.coldemail: INFO
+  file:
+    name: /var/log/cold-email-app.log
+
+---
+# Testing Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+
+# Test Logging
+logging:
+  level:
+    root: WARN
+    com.coldemail: DEBUG
+
+---
+# Docker Profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+# Docker-specific configuration
+server:
+  port: 8080
+
+# Docker CORS (supports both localhost and container networking)
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+  cors:
+    additional-origins:
+      - http://localhost:3000
+      - http://localhost:3001
+      - http://host.docker.internal:3000
+
+# Docker OAuth (override redirect URI for container)
+google:
+  oauth:
+    redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/auth/callback}
+
+# Docker Logging
+logging:
+  level:
+    root: INFO
+    com.coldemail: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

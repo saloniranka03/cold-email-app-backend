@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Google OAuth Configuration
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+      - GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8080/api/auth/callback}
+
+      # Frontend Configuration
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+
+      # Spring Profile
+      - SPRING_PROFILES_ACTIVE=docker
+
+      # JVM Optimization for containers
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+
+    env_file:
+      - .env
+
+    restart: unless-stopped
+
+    # Updated health check using Spring Boot Actuator instead of curl
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '1.0'
+        reservations:
+          memory: 256m
+          cpus: '0.5'
