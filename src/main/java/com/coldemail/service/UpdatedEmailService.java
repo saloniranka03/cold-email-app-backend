@@ -54,7 +54,7 @@ public class UpdatedEmailService {
         try {
             // Validate session
             if (sessionId == null) {
-                throw new SecurityException("Invalid session ID"");
+                throw new SecurityException("Invalid session ID");
             }
 
             // Get authenticated user's email
