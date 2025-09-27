@@ -19,12 +19,13 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // FIXED: Use setAllowedOriginPatterns instead of setAllowedOrigins for localhost
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:*",      // Allow any localhost port
-                "https://localhost:*",     // Allow HTTPS localhost
-                frontendUrl                // Production frontend URL
+        // Use specific origins instead of patterns for credentials
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "https://localhost:3000", 
+                frontendUrl  // Hardcode the production URL
         ));
+        
 
         // Allow all common HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
