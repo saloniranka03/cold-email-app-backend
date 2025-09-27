@@ -107,6 +107,18 @@ app:
     additional-origins:
       - https://cold-email-app.netlify.app
 
+# Add this to your production profile
+server:
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: -1
+        secure: true
+        same-site: none
+        path: /
+        http-only: true
+
 # Production OAuth
 google:
   oauth:
