@@ -39,7 +39,6 @@ public class CorsConfig {
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials",
                 "Authorization",
-                "Set-Cookie"  // Add this line
         ));
 
         // CRITICAL: Allow credentials (cookies, authorization headers, etc.)
