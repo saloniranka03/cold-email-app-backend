@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"}, allowCredentials = true)
+@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"})
 public class AuthController {
 
     @Value("${app.frontend.url}")
