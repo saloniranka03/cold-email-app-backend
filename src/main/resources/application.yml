@@ -1,6 +1,16 @@
 # Default configuration
 server:
   port: 8080
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800  # 30 minutes in seconds
+        secure: false  # Set to true only in production with HTTPS
+        same-site: lax # Better for CORS than 'none'
+        path: /
+        http-only: true
+      timeout: 30m
 
 spring:
   application:
@@ -54,6 +64,19 @@ spring:
     activate:
       on-profile: local
 
+# Local session config (HTTP, less secure for development)
+server:
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800
+        secure: false  # HTTP allowed for localhost
+        same-site: lax
+        path: /
+        http-only: true
+      timeout: 30m
+
 # Local OAuth Configuration (replace with your actual values)
 google:
   oauth:
@@ -78,6 +101,19 @@ spring:
     activate:
       on-profile: dev
 
+# Development session config
+server:
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800
+        secure: false
+        same-site: lax
+        path: /
+        http-only: true
+      timeout: 30m
+
 # Development CORS
 app:
   frontend:
@@ -99,6 +135,19 @@ spring:
     activate:
       on-profile: prod
 
+# Production session config (HTTPS required for secure=true)
+server:
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800
+        secure: true   # Only because you're using HTTPS in production
+        same-site: none # Required for cross-origin requests with secure=true
+        path: /
+        http-only: true
+      timeout: 30m
+
 # Production CORS
 app:
   frontend:
@@ -106,18 +155,6 @@ app:
   cors:
     additional-origins:
       - https://cold-email-app.netlify.app
-
-# Add this to your production profile
-server:
-  servlet:
-    session:
-      cookie:
-        name: JSESSIONID
-        max-age: -1
-        secure: true
-        same-site: none
-        path: /
-        http-only: true
 
 # Production OAuth
 google:
@@ -139,6 +176,19 @@ spring:
     activate:
       on-profile: test
 
+# Test session config
+server:
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800
+        secure: false
+        same-site: lax
+        path: /
+        http-only: true
+      timeout: 30m
+
 # Test Logging
 logging:
   level:
@@ -152,9 +202,19 @@ spring:
     activate:
       on-profile: docker
 
-# Docker-specific configuration
+# Docker session config
 server:
   port: 8080
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID
+        max-age: 1800
+        secure: false
+        same-site: lax
+        path: /
+        http-only: true
+      timeout: 30m
 
 # Docker CORS (supports both localhost and container networking)
 app:
