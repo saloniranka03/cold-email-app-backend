@@ -15,12 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/email")
-@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"}, allowCredentials = true)
+@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"}, allowCredentials = "true")
 public class EmailController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailController.class);
