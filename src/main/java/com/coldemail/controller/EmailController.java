@@ -1,4 +1,3 @@
-// backend/src/main/java/com/coldemail/controller/EmailController.java
 package com.coldemail.controller;
 
 import com.coldemail.model.EmailRequest;
@@ -15,8 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
