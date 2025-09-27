@@ -1,3 +1,4 @@
+// backend/src/main/java/com/coldemail/controller/EmailController.java
 package com.coldemail.controller;
 
 import com.coldemail.model.EmailRequest;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/email")
-@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"}, allowCredentials = true)
 public class EmailController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailController.class);
@@ -48,6 +49,30 @@ public class EmailController {
                    linkedInUrl != null ? linkedInUrl : "not provided");
         logger.info("Templates path: {}", templatesFolderPath);
 
+        // CRITICAL DEBUG: Log all request details
+        logger.info("=== DEBUGGING SESSION ISSUE ===");
+        
+        // Log all cookies received
+        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            logger.info("🍪 Received {} cookies:", cookies.length);
+            for (jakarta.servlet.http.Cookie cookie : cookies) {
+                logger.info("  Cookie: {} = {} (domain: {}, path: {}, secure: {}, httpOnly: {})", 
+                           cookie.getName(), cookie.getValue(), cookie.getDomain(), 
+                           cookie.getPath(), cookie.getSecure(), cookie.isHttpOnly());
+            }
+        } else {
+            logger.error("❌ NO COOKIES RECEIVED - This is the problem!");
+        }
+        
+        // Log critical request headers
+        logger.info("📋 Critical request headers:");
+        logger.info("  Host: {}", request.getHeader("Host"));
+        logger.info("  Origin: {}", request.getHeader("Origin"));
+        logger.info("  Referer: {}", request.getHeader("Referer"));
+        logger.info("  User-Agent: {}", request.getHeader("User-Agent"));
+        logger.info("  Content-Type: {}", request.getHeader("Content-Type"));
+        
         // Check HTTP session authentication
         logger.debug("Checking HTTP session authentication...");
         HttpSession httpSession = request.getSession(false);
@@ -58,13 +83,13 @@ public class EmailController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResult);
         }
 
-        logger.info("HTTP session found: {}", httpSession.getId());
+        logger.debug("HTTP session found: {}", httpSession.getId());
         
         String accessToken = (String) httpSession.getAttribute("accessToken");
         String userEmail = (String) httpSession.getAttribute("userEmail");
         String userId = (String) httpSession.getAttribute("userId");
 
-        logger.info("Session attributes - User ID: {}, Email: {}, Access Token: {}", 
+        logger.debug("Session attributes - User ID: {}, Email: {}, Access Token: {}", 
                     userId, userEmail, accessToken != null ? "present" : "missing");
 
         if (accessToken == null || userEmail == null) {
@@ -87,7 +112,7 @@ public class EmailController {
             emailRequest.setTemplatesFolderPath(templatesFolderPath);
 
             logger.info("Email request object created successfully");
-            logger.info("Request details - Full Name: {}, Phone: {}, LinkedIn: {}, Templates Path: {}", 
+            logger.debug("Request details - Full Name: {}, Phone: {}, LinkedIn: {}, Templates Path: {}", 
                         fullName, phoneNumber, linkedInUrl, templatesFolderPath);
 
             // Create a temporary session using HTTP session ID for the email service
@@ -195,6 +220,84 @@ public class EmailController {
             logger.error("Error creating temporary session for user {}: {}", userEmail, e.getMessage(), e);
             throw new RuntimeException("Failed to create session for email processing", e);
         }
+    }
+
+    /**
+     * Session debug endpoint to diagnose session persistence issues
+     */
+    @GetMapping("/session-debug")
+    public ResponseEntity<Map<String, Object>> sessionDebug(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        logger.info("=== SESSION DEBUG ENDPOINT ===");
+        
+        // Check cookies
+        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+        List<String> cookieInfo = new ArrayList<>();
+        if (cookies != null) {
+            logger.info("Cookies received: {}", cookies.length);
+            for (jakarta.servlet.http.Cookie cookie : cookies) {
+                String cookieStr = String.format("%s=%s (domain:%s, path:%s, secure:%s, httpOnly:%s)", 
+                    cookie.getName(), cookie.getValue(), cookie.getDomain(), 
+                    cookie.getPath(), cookie.getSecure(), cookie.isHttpOnly());
+                cookieInfo.add(cookieStr);
+                logger.info("  Cookie: {}", cookieStr);
+            }
+        } else {
+            logger.warn("NO COOKIES RECEIVED - This is likely the problem");
+            cookieInfo.add("NO_COOKIES_RECEIVED");
+        }
+        response.put("cookies", cookieInfo);
+        
+        // Check session
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            logger.info("Session found: {}", session.getId());
+            
+            List<String> attributes = new ArrayList<>();
+            java.util.Enumeration<String> attrNames = session.getAttributeNames();
+            while (attrNames.hasMoreElements()) {
+                String attrName = attrNames.nextElement();
+                Object attrValue = session.getAttribute(attrName);
+                String valueStr = attrValue != null ? attrValue.toString() : "null";
+                if (attrName.equals("accessToken") && attrValue != null) {
+                    valueStr = "present (" + valueStr.length() + " chars)";
+                }
+                attributes.add(attrName + "=" + valueStr);
+                logger.info("  Session attribute: {} = {}", attrName, valueStr);
+            }
+            
+            response.put("sessionId", session.getId());
+            response.put("sessionAttributes", attributes);
+            response.put("hasAccessToken", session.getAttribute("accessToken") != null);
+            response.put("hasUserEmail", session.getAttribute("userEmail") != null);
+            response.put("sessionCreationTime", new java.util.Date(session.getCreationTime()));
+            response.put("sessionLastAccessed", new java.util.Date(session.getLastAccessedTime()));
+            response.put("sessionMaxInactive", session.getMaxInactiveInterval());
+            response.put("sessionIsNew", session.isNew());
+        } else {
+            logger.error("NO SESSION FOUND - Session not created or expired");
+            response.put("sessionId", "NO_SESSION");
+            response.put("error", "Session not found - this is the core problem");
+            response.put("possibleCauses", java.util.Arrays.asList(
+                "No JSESSIONID cookie sent by frontend",
+                "Session expired or timed out", 
+                "CORS blocking session cookies",
+                "Session created in different context"
+            ));
+        }
+        
+        // Additional debug info
+        response.put("requestInfo", Map.of(
+            "method", request.getMethod(),
+            "requestURI", request.getRequestURI(),
+            "origin", request.getHeader("Origin"),
+            "host", request.getHeader("Host"),
+            "userAgent", request.getHeader("User-Agent")
+        ));
+        
+        logger.info("=== END SESSION DEBUG ===");
+        return ResponseEntity.ok(response);
     }
 
     /**
