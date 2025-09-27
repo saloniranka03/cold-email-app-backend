@@ -153,6 +153,7 @@ app:
       - http://localhost:3000
       - http://localhost:3001
       - http://host.docker.internal:3000
+      - https://cold-email-app.netlify.app
 
 # Docker OAuth (override redirect URI for container)
 google:
