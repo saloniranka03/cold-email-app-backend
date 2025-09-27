@@ -19,7 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/email")
 //@CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = true)
-@CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://cold-email-app.netlify.app"})
 //@CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = "${app.cors.allow-credentials:true}")
 public class EmailController {
 
