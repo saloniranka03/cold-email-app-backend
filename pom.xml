@@ -68,6 +68,19 @@
 			<version>${apache-poi.version}</version>
 		</dependency>
 
+		<!-- Spring Session for session management -->
+		<dependency>
+		    <groupId>org.springframework.session</groupId>
+		    <artifactId>spring-session-core</artifactId>
+		</dependency>
+		
+		<!-- Jakarta Servlet API -->
+		<dependency>
+		    <groupId>jakarta.servlet</groupId>
+		    <artifactId>jakarta.servlet-api</artifactId>
+		    <scope>provided</scope>
+		</dependency>
+		
 		<!-- Jakarta Mail API (for email creation) -->
 		<dependency>
 			<groupId>jakarta.mail</groupId>
