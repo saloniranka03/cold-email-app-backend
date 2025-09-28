@@ -1,10 +1,10 @@
-// backend/src/main/java/com/coldemail/controller/EmailController.java
 package com.coldemail.controller;
 
 import com.coldemail.model.EmailRequest;
 import com.coldemail.model.ProcessingResult;
 import com.coldemail.service.AuthService;
 import com.coldemail.service.UpdatedEmailService;
+import com.coldemail.service.FileProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/email")
-//@CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = true)
 @CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = "true")
-//@CrossOrigin(origins = {"http://localhost:3000", "${app.frontend.url}"}, allowCredentials = "${app.cors.allow-credentials:true}")
 public class EmailController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailController.class);
@@ -29,10 +27,14 @@ public class EmailController {
     private UpdatedEmailService emailService;
 
     @Autowired
+    private FileProcessingService fileProcessingService;
+
+    @Autowired
     private AuthService authService;
 
     /**
-     * Process email requests with session-based authentication
+     * ENHANCED: Process emails with either file uploads OR folder path
+     * Supports both new file upload method and existing folder path method
      */
     @PostMapping("/process")
     public ResponseEntity<ProcessingResult> processEmails(
@@ -40,7 +42,9 @@ public class EmailController {
             @RequestParam("fullName") String fullName,
             @RequestParam("phoneNumber") String phoneNumber,
             @RequestParam(value = "linkedInUrl", required = false) String linkedInUrl,
-            @RequestParam("templatesFolderPath") String templatesFolderPath,
+            @RequestParam(value = "templatesFolderPath", required = false) String templatesFolderPath,
+            @RequestParam(value = "templateFiles", required = false) MultipartFile[] templateFiles,
+            @RequestParam(value = "resumeFiles", required = false) MultipartFile[] resumeFiles,
             @CookieValue(value = "session_id", required = false) String sessionId) {
 
         logger.info("Processing email request for user session: {}", sessionId);
@@ -63,15 +67,52 @@ public class EmailController {
             emailRequest.setFullName(fullName);
             emailRequest.setPhoneNumber(phoneNumber);
             emailRequest.setLinkedInUrl(linkedInUrl != null ? linkedInUrl : "");
-            emailRequest.setTemplatesFolderPath(templatesFolderPath);
 
-            // Process emails with session
-            ProcessingResult result = emailService.processEmailRequests(file, emailRequest, sessionId);
+            // Determine processing method based on what was provided
+            boolean hasFileUploads = (templateFiles != null && templateFiles.length > 0) ||
+                    (resumeFiles != null && resumeFiles.length > 0);
+            boolean hasFolderPath = templatesFolderPath != null && !templatesFolderPath.trim().isEmpty();
+
+            ProcessingResult result;
+
+            if (hasFileUploads) {
+                // NEW METHOD: Process with uploaded files
+                logger.info("Processing with uploaded files: {} templates, {} resumes",
+                        templateFiles != null ? templateFiles.length : 0,
+                        resumeFiles != null ? resumeFiles.length : 0);
+
+                result = fileProcessingService.processEmailRequestsWithFiles(
+                        file,
+                        templateFiles != null ? templateFiles : new MultipartFile[0],
+                        resumeFiles != null ? resumeFiles : new MultipartFile[0],
+                        emailRequest,
+                        sessionId);
+
+            } else if (hasFolderPath) {
+                // EXISTING METHOD: Process with folder path
+                logger.info("Processing with folder path: {}", templatesFolderPath);
+                emailRequest.setTemplatesFolderPath(templatesFolderPath);
+                result = emailService.processEmailRequests(file, emailRequest, sessionId);
+
+            } else {
+                // NO METHOD PROVIDED: Return error
+                throw new IllegalArgumentException("Please provide either a templates folder path OR upload template/resume files");
+            }
 
             logger.info("Email processing completed for user: {}. Success: {}, Errors: {}",
                     session.getEmail(), result.getSuccessCount(), result.getErrorCount());
 
             return ResponseEntity.ok(result);
+
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid request for user {}: {}", session.getEmail(), e.getMessage());
+            ProcessingResult errorResult = new ProcessingResult();
+            errorResult.setTotalProcessed(0);
+            errorResult.setSuccessCount(0);
+            errorResult.setErrorCount(1);
+            errorResult.addError("Invalid request: " + e.getMessage());
+            errorResult.setHelpText("Please provide either a valid templates folder path or upload your template and resume files.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResult);
 
         } catch (Exception e) {
             logger.error("Email processing failed for user {}: {}", session.getEmail(), e.getMessage(), e);
@@ -82,7 +123,7 @@ public class EmailController {
             errorResult.setErrorCount(1);
             errorResult.addError("Processing failed: " + e.getMessage());
             errorResult.setHelpText("An unexpected error occurred. Please check your file format and try again. " +
-                    "Ensure your templates folder path is correct and accessible.");
+                    "Ensure your templates folder path is correct and accessible, or upload valid template and resume files.");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
         }
@@ -95,7 +136,7 @@ public class EmailController {
     public ResponseEntity<Map<String, String>> healthCheck() {
         Map<String, String> response = new HashMap<>();
         response.put("status", "OK");
-        response.put("service", "Cold Email Service");
+        response.put("service", "Cold Email Service - Dual Method Support");
         response.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return ResponseEntity.ok(response);
     }
