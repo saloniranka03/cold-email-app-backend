@@ -110,6 +110,7 @@ public class GoogleOAuthConfig {
     private void validatePropertyFormats() {
         try {
             // Validate Client ID format
+            System.out.println("clientId : " + clientId);
             if (!CLIENT_ID_PATTERN.matcher(clientId).matches()) {
                 String errorMessage = String.format(
                         "Invalid Google OAuth Client ID format: '%s'. " +
