@@ -74,7 +74,7 @@ public class AuthController {
             response.addCookie(sessionCookie);
 
             // For production deployment, also try setting via response header
-            log.info("Active profile in AuthContrller : {}", activeProfile);
+            logger.info("Active profile in AuthContrller : {}", activeProfile);
             if (!"local".equals(activeProfile)) {
                 String cookieHeader = buildCookieHeader(sessionId);
                 response.setHeader("Set-Cookie", cookieHeader);
