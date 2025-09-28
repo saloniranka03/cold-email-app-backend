@@ -65,7 +65,7 @@ public class AuthController {
             // Set secure HTTP-only cookie
             Cookie sessionCookie = new Cookie("session_id", sessionId);
             sessionCookie.setHttpOnly(true);
-            sessionCookie.setSecure(false); // Set to true in production with HTTPS
+            sessionCookie.setSecure(true); // Set to true in production with HTTPS
             sessionCookie.setPath("/");
             sessionCookie.setMaxAge(3600); // 1 hour
             response.addCookie(sessionCookie);
