@@ -38,7 +38,7 @@ public class CorsConfig {
         configuration.setExposedHeaders(Arrays.asList(
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials",
-                "Authorization",
+                "Authorization"
         ));
 
         // CRITICAL: Allow credentials (cookies, authorization headers, etc.)

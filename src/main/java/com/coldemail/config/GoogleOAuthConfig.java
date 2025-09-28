@@ -110,6 +110,7 @@ public class GoogleOAuthConfig {
     private void validatePropertyFormats() {
         try {
             // Validate Client ID format
+            System.out.println("clientId : " + clientId);
             if (!CLIENT_ID_PATTERN.matcher(clientId).matches()) {
                 String errorMessage = String.format(
                         "Invalid Google OAuth Client ID format: '%s'. " +
@@ -303,7 +304,7 @@ public class GoogleOAuthConfig {
             // Environment-specific warnings
             if ("local".equals(activeProfile)) {
                 logger.info("Running in LOCAL mode - using development OAuth settings");
-            } else if ("production".equals(activeProfile)) {
+            } else if ("prod".equals(activeProfile)) {
                 logger.info("Running in PRODUCTION mode - ensure OAuth settings are production-ready");
 
                 if (redirectUri.contains("localhost")) {
