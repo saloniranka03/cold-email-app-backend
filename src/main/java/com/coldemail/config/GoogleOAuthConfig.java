@@ -304,7 +304,7 @@ public class GoogleOAuthConfig {
             // Environment-specific warnings
             if ("local".equals(activeProfile)) {
                 logger.info("Running in LOCAL mode - using development OAuth settings");
-            } else if ("production".equals(activeProfile)) {
+            } else if ("prod".equals(activeProfile)) {
                 logger.info("Running in PRODUCTION mode - ensure OAuth settings are production-ready");
 
                 if (redirectUri.contains("localhost")) {
